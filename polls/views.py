@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template import loader
 from django.urls import reverse
 
+
 # 模板系统统一使用点符号来访问变量的属性。在示例 {{ question.question_text }} 中，首先 Django 尝试对 question 对象使用字典查找（也就是使用 obj.get(str) 操作），如果失败了就尝试属性查找（也就是 obj.str 操作），结果是成功了。如果这一操作也失败的话，将会尝试列表查找（也就是 obj[int] 操作）
 
 
@@ -37,7 +38,7 @@ from django.urls import reverse
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
-        selected_choice = question.choice_set.get(pk=request.POST['choice']) # request.POST 是一个类字典对象，让你可以通过关键字的
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])  # request.POST 是一个类字典对象，让你可以通过关键字的
         # 名字获取提交的数据,Django 还以同样的方式提供 request.GET 用于访问 GET 数据 —— 但我们在代码中显式地使用 request.POST ，
         # 以保证数据只能通过 POST 调用改动。request.POST 的值永远是字符串。
     except (KeyError, Choice.DoesNotExist):
@@ -55,13 +56,17 @@ def vote(request, question_id):
         # reverse() 调用将返回一个这样的字符串：'/polls/3/results/'
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 
-#------------------------下面采用通用视图的方式--------------------------------------------------
+
+# ------------------------下面采用通用视图的方式--------------------------------------------------
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 
 from .models import Choice, Question
+from django.utils import timezone
+
+
 class IndexView(generic.ListView):
     # 类似地，ListView 使用一个叫做 <app name>/<model name>_list.html 的默认模板；我们使用 template_name 来告诉 ListView 使用我们创
     # 建的已经存在的 "polls/index.html" 模板。
@@ -74,17 +79,25 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         """Return the last five published questions."""
-        return Question.objects.order_by('-pub_date')[:5]
+        return Question.objects.filter(
+            pub_date__lte=timezone.now()
+        ).order_by('-pub_date')[:5]
 
 
 class DetailView(generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
-    #默认情况下，通用视图 DetailView 使用一个叫做 <app name>/<model name>_detail.html 的模板。在我们的例子中，它将使用
+
+    # 默认情况下，通用视图 DetailView 使用一个叫做 <app name>/<model name>_detail.html 的模板。在我们的例子中，它将使用
     # "polls/question_detail.html" 模板。template_name 属性是用来告诉 Django 使用一个指定的模板名字，而不是自动生成的默认名字
+
+    def get_queryset(self):
+        """
+        Excludes any questions that aren't published yet.
+        """
+        return Question.objects.filter(pub_date__lte=timezone.now())
 
 
 class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
-
