@@ -1,6 +1,19 @@
 from django.db import models
 import datetime
 from django.utils import timezone
+# https://docs.djangoproject.com/zh-hans/2.1/topics/db/models/#fields
+class QManager(models.Manager):
+
+    def add_one_question(self, text, date):
+        '''添加一个问题'''
+
+        question = super().create(question_text=text, pub_date=date)
+        return question
+
+    def get_one_question(self, text):
+        question = self.get(question_text=text)
+        return question
+
 
 # Create your models here.
 class Question(models.Model):
@@ -18,6 +31,7 @@ class Question(models.Model):
     was_published_recently.boolean = True  # was_published_recently可排序
     was_published_recently.short_description = 'Published recently?'
 
+    objects = QManager()
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

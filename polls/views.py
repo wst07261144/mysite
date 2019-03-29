@@ -53,7 +53,8 @@ def vote(request, question_id):
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
-        # reverse() 调用将返回一个这样的字符串：'/polls/3/results/'
+        # TODO
+        # reverse() 反向解析URL 调用将返回一个这样的字符串：'/polls/3/results/'
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 
 
