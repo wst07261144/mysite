@@ -27,9 +27,10 @@ class Question(models.Model):
         now = timezone.now()
         return now - datetime.timedelta(days=1) <= self.pub_date <= now
     # 以下为了在admin页面展示用
-    was_published_recently.admin_order_field = 'pub_date', # was_published_recently可排序
-    was_published_recently.boolean = True  # was_published_recently可排序
-    was_published_recently.short_description = 'Published recently?'
+    was_published_recently.admin_order_field = '-pub_date', # was_published_recently可排序，还可以跨表跨关系引用，如下：
+    # author_first_name.admin_order_field = 'author__first_name'
+    was_published_recently.boolean = True  # was_published_recently将显示为on/off的图标
+    was_published_recently.short_description = 'Published recently?' # 列名
 
     objects = QManager()
 
